@@ -1,6 +1,7 @@
 ## 1. overview
 - ✅ (24/01/23 수정) 작업 스케쥴러 GUI ➡️ Powershell Script
 - <https://github.com/rimgosu/gitsync>
+- [벨로그 글 보러가기](https://velog.io/@rimgosu/windows-11-github-%EB%AA%A8%EB%93%A0-repo%EC%99%80-%EC%9E%90%EB%8F%99%EC%9C%BC%EB%A1%9C-%EB%8F%99%EA%B8%B0%ED%99%94%ED%95%98%EA%B8%B0)
 
 ```
 C:/gits	┬ allclone.py 
