@@ -129,6 +129,7 @@ setx GITHUB_TOKEN "[5번에서_발급받은_토큰_입력]"
 ![](https://velog.velcdn.com/images/rimgosu/post/1282b99f-ebde-4c81-b0e0-6efc61b08fd6/image.png)
 
 - 트리거
+- 
 ![](https://velog.velcdn.com/images/rimgosu/post/9a628f18-e723-4260-aad9-32c712262687/image.png)
 
 - 동작 
