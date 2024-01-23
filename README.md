@@ -1,10 +1,10 @@
-# git-synchronize
-
 ## 1. overview
-- <https://github.com/rimgosu/git-synchronize>
+- ✅ (24/01/23 수정) 작업 스케쥴러 GUI ➡️ Powershell Script
+- <https://github.com/rimgosu/gitsync>
+
 ```
-┬ allclone.py 
-└ runallclone.bat
+C:/gits	┬ allclone.py 
+		└ runallclone.bat
 ```
 
 ### 사전 준비물
@@ -14,15 +14,15 @@
 
 ## 2. python 라이브러리 설치
 - GitPython의 설치가 필요하다.
-```
+```bash
 pip install requests GitPython
 ```
 
 
 ## 3. 파이썬 코드 작성
-- `allclone.py`
+- `C:\gits\allclone.py`
 
-```
+```python
 import requests
 from git import Repo, GitCommandError
 import os
@@ -73,8 +73,7 @@ def clone_or_update_repo(username, repo, token):
             print(f"Error cloning {repo}: {e}")
 
 token = os.environ.get('GITHUB_TOKEN')
-username = "[깃허브 사용자 닉네임 입력]"
-# ex ) username = "rimgosu"
+username = "[깃허브 사용자 닉네임 입력]" # ex) username = "rimgosu"
 repos = get_user_repos(username, token)
 print(f"{username}의 레포지토리 목록: {repos}")
 
@@ -82,9 +81,9 @@ for repo in repos:
     clone_or_update_repo(username, repo, token)
 ```
 
-- 아래 username을 자기의 깃허브 닉네임으로 바꿔넣자.
+- **아래 username을 자기의 깃허브 닉네임으로 바꿔넣자.**
 - private 상태의 레포지토리도 검색하여 모든 레포지토리의 이름을 담아둔다.
-- 만약 해당 레포지토리의 폴더가 없으면 clone을, 해당 레포지토리의 폴더가 있으면 다음 명령어를 실행한다.
+- 만약 해당 레포지토리의 폴더가 없으면 clone을, 해당 레포지토리의 폴더가 있으면 다음 명령어를 실행하는 것과 같다.
 
 ```bash
 git pull origin [main/master]
@@ -95,13 +94,11 @@ git push origin master
 
 
 ## 4. 배치파일 작성
-- `runallclone.bat`
+- `C:\gits\runallclone.bat`
+```bash
+cd "C:\gits"
+python "C:\gits\allclone.py"
 ```
-python [경로를 입력하세요]/allclone.py
-pause
-```
-
-- 만약 실행된 내역을 보고싶지 않다면 pause를 삭제할 것.
 
 
 ## 5. github PAT token 받기
@@ -112,7 +109,7 @@ pause
 
 ## 6. 윈도우 환경변수 설정
 - `cmd`
-```
+```shell
 setx GITHUB_TOKEN "[5번에서_발급받은_토큰_입력]"
 ```
 - **다시시작** 해야 깃허브 토큰이 제대로 환경 변수로 등록된다.
@@ -120,32 +117,37 @@ setx GITHUB_TOKEN "[5번에서_발급받은_토큰_입력]"
 
 ## 7. 배치파일 직접 실행 or 작업 스케쥴러
 - `runallclone.bat`을 더블 클릭하여 실행하면 파이썬 스크립트가 실행되어 모든 깃허브 레포지토리가 동기화 된다.
-- 만약 xx분 마다 깃허브와 로컬의 저장소를 동기화시키고 싶다면 작업 스케쥴러를 사용하자. 
-- 리눅스는 crontab 쓰면 되니 더 간단하게 될 것이다. bat 파일을 sh로 바꾸고 실행해보자.
-- `검색 - 작업 스케쥴러` 실행 후 다음과 같이 설정하자.
+- 작업 스케쥴러 설정을 해주자. 
+- `검색-Windows Powershell(관리자 권한으로 실행)-아래 스크립트 붙여넣기`
+
+```shell
+# 매시간 반복 실행될 작업의 액션 설정
+$ActionEveryHour = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -Command `"& 'C:\gits\runallclone.bat'`""
+
+# 매시간 반복될 트리거 설정
+$TriggerEveryHour = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(1) -RepetitionInterval (New-TimeSpan -Hours 1)
+
+# 작업을 실행할 사용자의 주요 설정
+$Principal = New-ScheduledTaskPrincipal -UserId "$env:USERDOMAIN\$env:USERNAME" -LogonType Interactive
+
+# 작업의 추가 설정
+$Settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
+
+# 작업 등록
+Register-ScheduledTask -TaskName "RunBatchEveryHour" -Action $ActionEveryHour -Trigger $TriggerEveryHour -Principal $Principal -Settings $Settings
+```
+
+- TriggerEveryHour의 "New-TimeSpan -Hours 1"부분을 수정하여 원하는 주기로 동기화할 수 있다.
+   - ex) 5분 단위로 커밋하고 싶다면 `-Minutes 5`
+   - ex) 2시간 단위로 커밋하고 싶다면 `-Hours 2`
    
-![](https://velog.velcdn.com/images/rimgosu/post/b4dd2802-5e58-4532-92ec-cb049f6f0fea/image.png)
+   
+### 작업 스케쥴러 확인
+- 확인 : `검색-작업 스케줄러-작업 스케줄러 라이브러리`
+- "RunBatchEveryHour"가 다음과 같이 잡히면 성공!
 
-![](https://velog.velcdn.com/images/rimgosu/post/1282b99f-ebde-4c81-b0e0-6efc61b08fd6/image.png)
+![](https://velog.velcdn.com/images/rimgosu/post/a464039a-c3d1-4cef-ae60-c31d93d6f0d5/image.png)
 
-- 트리거
-- 
-![](https://velog.velcdn.com/images/rimgosu/post/9a628f18-e723-4260-aad9-32c712262687/image.png)
-
-- 동작 
-   - **시작위치, 배치파일 위치 나눠서 작성한다.**
-
-![](https://velog.velcdn.com/images/rimgosu/post/2882834b-e9bf-4f34-8b1f-d3faca41c256/image.png)
-
-- 조건
-
-![](https://velog.velcdn.com/images/rimgosu/post/b8fded2b-1193-4169-8cd6-a5b27b205be9/image.png)
-
-- 설정
-
-![](https://velog.velcdn.com/images/rimgosu/post/05ef3723-a227-495c-8b8c-ba240b0fd500/image.png)
-
-- **다시 시작**하거나 만든 스케쥴러를 선택 - `실행` 버튼을 누르면 자동으로 원격 저장소와 sync를 맞추게 된다.
 
 ## 8. 동작 확인
 - 다음과 같이 일정 시간마다 내 모든 깃허브 레포지토리와 동기화 하는 것을 볼 수 있다.
