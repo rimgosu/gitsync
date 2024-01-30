@@ -4,14 +4,19 @@ import os
 from datetime import datetime
 
 def get_user_repos(username, token):
-    try:
+    all_repos = []
+    page = 1
+    while True:
         headers = {"Authorization": f"Bearer {token}"}
-        response = requests.get(f"https://api.github.com/search/repositories?q=user:{username}", headers=headers)
+        url = f"https://api.github.com/search/repositories?q=user:{username}&page={page}"
+        response = requests.get(url, headers=headers)
         response.raise_for_status()
         repos = response.json()["items"]
-        return [repo['name'] for repo in repos]
-    except requests.exceptions.HTTPError as err:
-        raise SystemExit(err)
+        if not repos:
+            break
+        all_repos.extend([repo['name'] for repo in repos])
+        page += 1
+    return all_repos
 
 def get_default_branch(username, repo, token):
     headers = {"Authorization": f"Bearer {token}"}
@@ -48,8 +53,7 @@ def clone_or_update_repo(username, repo, token):
             print(f"Error cloning {repo}: {e}")
 
 token = os.environ.get('GITHUB_TOKEN')
-username = "[깃허브 사용자 닉네임 입력]"
-# ex ) username = "rimgosu"
+username = "rimgosu"
 repos = get_user_repos(username, token)
 print(f"{username}의 레포지토리 목록: {repos}")
 
