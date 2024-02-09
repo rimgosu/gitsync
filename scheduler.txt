@@ -1,0 +1,14 @@
+# 매시간 반복 실행될 작업의 액션 설정
+$ActionEveryHour = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -Command `"& 'C:\gits\gitsync\runallclone.bat'`""
+
+# 매시간 반복될 트리거 설정
+$TriggerEveryHour = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(1) -RepetitionInterval (New-TimeSpan -Hours 3)
+
+# 작업을 실행할 사용자의 주요 설정
+$Principal = New-ScheduledTaskPrincipal -UserId "$env:USERDOMAIN\$env:USERNAME" -LogonType Interactive
+
+# 작업의 추가 설정
+$Settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
+
+# 작업 등록
+Register-ScheduledTask -TaskName "RunBatchEveryHour" -Action $ActionEveryHour -Trigger $TriggerEveryHour -Principal $Principal -Settings $Settings
