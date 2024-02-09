@@ -26,10 +26,11 @@ def get_default_branch(username, repo, token):
     return repo_data['default_branch']
 
 def clone_or_update_repo(username, repo, token):
-    if os.path.isdir(repo):
+    repo_path = os.path.join("..", repo) # 상위 폴더에 레포지토리를 설정
+    if os.path.isdir(repo_path):
         try:
             print(f"Checking {repo}...")
-            git_repo = Repo(repo)
+            git_repo = Repo(repo_path)
 
             default_branch = get_default_branch(username, repo, token)
 
@@ -47,7 +48,7 @@ def clone_or_update_repo(username, repo, token):
             print(f"Cloning {repo}...")
             Repo.clone_from(
                 f"https://x-access-token:{token}@github.com/{username}/{repo}.git",
-                repo
+                repo_path
             )
         except GitCommandError as e:
             print(f"Error cloning {repo}: {e}")
